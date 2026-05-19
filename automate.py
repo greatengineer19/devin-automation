@@ -29,14 +29,12 @@ def get_labeled_issues():
     response = requests.get(url, headers=GITHUB_HEADERS, params=params)
     data = response.json()
 
-    # Debug: print what GitHub actually returned
     print(f"GitHub API response: {data}")
 
-    # If it's not a list, something went wrong
     if not isinstance(data, list):
         print(f"Error from GitHub API: {data}")
         return []
-    
+
     return data
 
 
@@ -99,6 +97,18 @@ def comment_on_issue(issue_number, session_data):
     requests.post(url, headers=GITHUB_HEADERS, json={"body": body})
 
 
+def remove_label(issue_number):
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/issues/{issue_number}/labels/devin-ready"
+    requests.delete(url, headers=GITHUB_HEADERS)
+    print(f"  Removed 'devin-ready' label from issue #{issue_number}")
+
+
+def add_completed_label(issue_number):
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/issues/{issue_number}/labels"
+    requests.post(url, headers=GITHUB_HEADERS, json={"labels": ["devin-completed"]})
+    print(f"  Added 'devin-completed' label to issue #{issue_number}")
+
+
 def log_session(issue, session_id, final_status):
     logs = []
     if os.path.exists(LOG_FILE):
@@ -135,6 +145,8 @@ def main():
 
         if not session_id:
             print(f"  Failed to start session: {session}")
+            remove_label(issue["number"])
+            add_completed_label(issue["number"])
             continue
 
         print(f"  Session started: {session_id}")
@@ -143,6 +155,8 @@ def main():
 
         comment_on_issue(issue["number"], final_data)
         log_session(issue, session_id, final_status)
+        remove_label(issue["number"])
+        add_completed_label(issue["number"])
 
         print(f"  Done. Status: {final_status}")
 
