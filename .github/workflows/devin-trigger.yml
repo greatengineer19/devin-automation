@@ -1,0 +1,25 @@
+name: Devin Auto-Remediation
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  remediate:
+    if: github.event.label.name == 'devin-ready'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout automation repo
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t devin-automation .
+
+      - name: Run Devin automation
+        run: |
+          docker run --rm \
+            -e DEVIN_API_KEY=${{ secrets.DEVIN_API_KEY }} \
+            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -e GITHUB_REPO=${{ secrets.GITHUB_REPO }} \
+            devin-automation
