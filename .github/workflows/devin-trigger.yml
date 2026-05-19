@@ -21,6 +21,6 @@ jobs:
         run: |
           docker run --rm \
             -e DEVIN_API_KEY=${{ secrets.DEVIN_API_KEY }} \
-            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
-            -e GITHUB_REPO=${{ secrets.GITHUB_REPO }} \
+            -e CURRENT_GITHUB_TOKEN=${{ secrets.CURRENT_GITHUB_TOKEN }} \
+            -e CURRENT_GITHUB_REPO=${{ secrets.CURRENT_GITHUB_REPO }} \
             devin-automation
