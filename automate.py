@@ -27,7 +27,17 @@ def get_labeled_issues():
     url = f"https://api.github.com/repos/{GITHUB_REPO}/issues"
     params = {"labels": "devin-ready", "state": "open"}
     response = requests.get(url, headers=GITHUB_HEADERS, params=params)
-    return response.json()
+    data = response.json()
+
+    # Debug: print what GitHub actually returned
+    print(f"GitHub API response: {data}")
+
+    # If it's not a list, something went wrong
+    if not isinstance(data, list):
+        print(f"Error from GitHub API: {data}")
+        return []
+    
+    return data
 
 
 def start_devin_session(issue):
