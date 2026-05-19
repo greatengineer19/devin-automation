@@ -3,10 +3,11 @@ name: Devin Auto-Remediation
 on:
   issues:
     types: [labeled]
+  workflow_dispatch:
 
 jobs:
   remediate:
-    if: github.event.label.name == 'devin-ready'
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.label.name == 'devin-ready' }}
     runs-on: ubuntu-latest
 
     steps:
