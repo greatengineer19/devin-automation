@@ -22,8 +22,7 @@
     .row-title { flex: 1; color: #333; }
     .row-meta { color: #999; font-size: 12px; min-width: 80px; text-align: right; }
     .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 500; white-space: nowrap; }
-    .badge-pending { background: #fff3cd; color: #856404; }
-    .badge-approved { background: #d0e9ff; color: #0c5aa0; }
+    .badge-ready { background: #d0e9ff; color: #0c5aa0; }
     .badge-completed { background: #d4edda; color: #155724; }
     .badge-failed { background: #f8d7da; color: #721c24; }
     .bar-wrap { height: 6px; background: #e8e8e8; border-radius: 3px; flex: 1; }
@@ -82,7 +81,7 @@
 <script>
 async function fetchLog() {
   try {
-    const res = await fetch('sessions_log.json');
+    const res = await fetch('https://raw.githubusercontent.com/greatengineer19/devin-automation/main/sessions_log.json');
     return await res.json();
   } catch {
     return [
@@ -109,8 +108,7 @@ async function loadData() {
   document.getElementById("rate").textContent = rate;
 
   const pipelineData = [
-    { label: "devin-pending",   count: 2, cls: "badge-pending" },
-    { label: "devin-approved",  count: 1, cls: "badge-approved" },
+    { label: "devin-ready",     count: logs.filter(l => l.status === "running").length || 1, cls: "badge-ready" },
     { label: "devin-completed", count: completed, cls: "badge-completed" },
     { label: "failed",          count: failed, cls: "badge-failed" },
   ];
