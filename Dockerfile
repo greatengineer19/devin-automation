@@ -6,6 +6,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY automate.py .
+COPY scan_issues.py .
 COPY sessions_log.json* ./
 
 CMD ["python", "automate.py"]

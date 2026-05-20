@@ -23,9 +23,9 @@ GITHUB_HEADERS = {
 }
 
 
-def get_labeled_issues():
+def get_approved_issues():
     url = f"https://api.github.com/repos/{GITHUB_REPO}/issues"
-    params = {"labels": "devin-ready", "state": "open"}
+    params = {"labels": "devin-approved", "state": "open"}
     response = requests.get(url, headers=GITHUB_HEADERS, params=params)
     data = response.json()
 
@@ -62,7 +62,7 @@ def start_devin_session(issue):
 
 
 def poll_session(session_id):
-    for _ in range(60):  # poll for max 30 minutes
+    for _ in range(60):
         response = requests.get(
             f"https://api.devin.ai/v1/sessions/{session_id}",
             headers=DEVIN_HEADERS
@@ -97,16 +97,16 @@ def comment_on_issue(issue_number, session_data):
     requests.post(url, headers=GITHUB_HEADERS, json={"body": body})
 
 
-def remove_label(issue_number):
-    url = f"https://api.github.com/repos/{GITHUB_REPO}/issues/{issue_number}/labels/devin-ready"
+def swap_labels(issue_number, remove_label, add_label):
+    # Remove old label
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/issues/{issue_number}/labels/{remove_label}"
     requests.delete(url, headers=GITHUB_HEADERS)
-    print(f"  Removed 'devin-ready' label from issue #{issue_number}")
 
-
-def add_completed_label(issue_number):
+    # Add new label
     url = f"https://api.github.com/repos/{GITHUB_REPO}/issues/{issue_number}/labels"
-    requests.post(url, headers=GITHUB_HEADERS, json={"labels": ["devin-completed"]})
-    print(f"  Added 'devin-completed' label to issue #{issue_number}")
+    requests.post(url, headers=GITHUB_HEADERS, json={"labels": [add_label]})
+
+    print(f"  Labels updated: {remove_label} → {add_label}")
 
 
 def log_session(issue, session_id, final_status):
@@ -128,14 +128,14 @@ def log_session(issue, session_id, final_status):
 
 
 def main():
-    print("Fetching devin-ready issues...")
-    issues = get_labeled_issues()
+    print("Fetching devin-approved issues...")
+    issues = get_approved_issues()
 
     if not issues:
-        print("No issues found with label 'devin-ready'")
+        print("No issues found with label 'devin-approved'")
         return
 
-    print(f"Found {len(issues)} issue(s). Starting Devin sessions...")
+    print(f"Found {len(issues)} approved issue(s). Starting Devin sessions...")
 
     for issue in issues:
         print(f"\nProcessing issue #{issue['number']}: {issue['title']}")
@@ -145,8 +145,6 @@ def main():
 
         if not session_id:
             print(f"  Failed to start session: {session}")
-            remove_label(issue["number"])
-            add_completed_label(issue["number"])
             continue
 
         print(f"  Session started: {session_id}")
@@ -155,8 +153,7 @@ def main():
 
         comment_on_issue(issue["number"], final_data)
         log_session(issue, session_id, final_status)
-        remove_label(issue["number"])
-        add_completed_label(issue["number"])
+        swap_labels(issue["number"], "devin-approved", "devin-completed")
 
         print(f"  Done. Status: {final_status}")
 
